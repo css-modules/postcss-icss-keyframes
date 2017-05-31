@@ -1,20 +1,22 @@
-import stripIndent from 'strip-indent';
-import postcss from 'postcss'
-import plugin from '../src'
+/* eslint-env jest */
+import stripIndent from "strip-indent";
+import postcss from "postcss";
+import plugin from "../src";
 
-const strip = input => stripIndent(input).replace(/^\n/, '')
+const strip = input => stripIndent(input).replace(/^\n/, "");
 const generateScopedName = local => `__scope__${local}`;
-const compile = (input, options) => postcss([plugin(options)]).process(input)
+const compile = (input, options, postcssOptions) =>
+  postcss([plugin(options)]).process(input, postcssOptions);
 const run = ({ fixture, expected = null, warnings = [] }) => {
   return compile(strip(fixture), { generateScopedName }).then(result => {
     if (expected) {
       expect(strip(result.css)).toEqual(strip(expected));
     }
     expect(result.warnings().map(warning => warning.text)).toEqual(warnings);
-  })
+  });
 };
 
-test('export local-scope keyframes', () => {
+test("export local-scope keyframes", () => {
   return run({
     fixture: `
       @keyframes fade-in {}
@@ -25,10 +27,10 @@ test('export local-scope keyframes', () => {
       }
       @keyframes __scope__fade-in {}
     `
-  })
-})
+  });
+});
 
-test('replace defined animation name', () => {
+test("replace defined animation name", () => {
   return run({
     fixture: `
       @keyframes foo {}
@@ -47,49 +49,51 @@ test('replace defined animation name', () => {
         animation-name: __scope__foo, __scope__foo;
       }
     `
-  })
-})
+  });
+});
 
-test('warn on using reserved animation name', () => {
+test("warn on using reserved animation name", () => {
   const names = [
-    'none',
-    'inherited',
-    'initial',
-    'unset',
+    "none",
+    "inherited",
+    "initial",
+    "unset",
     /* single-timing-function */
-    'linear',
-    'ease',
-    'ease-in',
-    'ease-in-out',
-    'ease-out',
-    'step-start',
-    'step-end',
-    'start',
-    'end',
+    "linear",
+    "ease",
+    "ease-in",
+    "ease-in-out",
+    "ease-out",
+    "step-start",
+    "step-end",
+    "start",
+    "end",
     /* single-animation-iteration-count */
-    'infinite',
+    "infinite",
     /* single-animation-direction */
-    'normal',
-    'reverse',
-    'alternate',
-    'alternate-reverse',
+    "normal",
+    "reverse",
+    "alternate",
+    "alternate-reverse",
     /* single-animation-fill-mode */
-    'forwards',
-    'backwards',
-    'both',
+    "forwards",
+    "backwards",
+    "both",
     /* single-animation-play-state */
-    'running',
-    'paused',
+    "running",
+    "paused"
   ];
-  const input = names.map(name => `@keyframes ${name} {}`).join('\n')
+  const input = names.map(name => `@keyframes ${name} {}`).join("\n");
   return run({
     fixture: input,
     expected: input,
-    warnings: names.map(name => `Unable to use reserve '${name}' animation name`)
+    warnings: names.map(
+      name => `Unable to use reserve '${name}' animation name`
+    )
   });
-})
+});
 
-test('warn on using invalid animation name identifier', () => {
+test("warn on using invalid animation name identifier", () => {
   return run({
     fixture: `
       @keyframes 22 {}
@@ -109,9 +113,9 @@ test('warn on using invalid animation name identifier', () => {
       `Invalid animation name identifier '22s'`
     ]
   });
-})
+});
 
-test('skips not defined animation name', () => {
+test("skips not defined animation name", () => {
   return run({
     fixture: `
       .bar {
@@ -125,10 +129,10 @@ test('skips not defined animation name', () => {
         animation-name: foo, foo;
       }
     `
-  })
-})
+  });
+});
 
-test('replace local-scope name in prefixed keyframes', () => {
+test("replace local-scope name in prefixed keyframes", () => {
   return run({
     fixture: `
       @-webkit-keyframes foo {}
@@ -156,7 +160,7 @@ test('replace local-scope name in prefixed keyframes', () => {
   });
 });
 
-test('do not replace local-scope name in non-animation props', () => {
+test("do not replace local-scope name in non-animation props", () => {
   return run({
     fixture: `
       @keyframes foo {}
@@ -172,7 +176,7 @@ test('do not replace local-scope name in non-animation props', () => {
   });
 });
 
-test('warn on using exising name in :export and override it', () => {
+test("warn on using exising name in :export and override it", () => {
   return run({
     fixture: `
       :export {
@@ -186,13 +190,11 @@ test('warn on using exising name in :export and override it', () => {
       }
       @keyframes __scope__foo {}
     `,
-    warnings: [
-      `'foo' identifier is already declared and will be override`
-    ]
+    warnings: [`'foo' identifier is already declared and will be override`]
   });
 });
 
-test('extend existing :export and save :import', () => {
+test("extend existing :export and save :import", () => {
   return run({
     fixture: `
       :import('path/to/file.css') {
@@ -213,11 +215,15 @@ test('extend existing :export and save :import', () => {
       }
       @keyframes __scope__name {}
     `
-  })
-})
+  });
+});
 
-test('default scope name generator saves local identifier', () => {
-  return expect(compile('@keyframes foo {}').then(result => result.css)).resolves.toEqual(
-    ':export {\n  foo: foo\n}\n@keyframes foo {}'
-  )
-})
+test("default scope name generator converts to filename__local identifier", () => {
+  return expect(
+    compile("@keyframes foo {}", undefined, { from: "path/to/_file.css" }).then(
+      result => result.css
+    )
+  ).resolves.toEqual(
+    ":export {\n  foo: __file_css__foo\n}\n@keyframes __file_css__foo {}"
+  );
+});

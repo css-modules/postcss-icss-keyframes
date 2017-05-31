@@ -1,7 +1,7 @@
 {
   "name": "postcss-icss-keyframes",
   "version": "0.0.0",
-  "description": "PostCSS plugin for css-modules to extract ICSS exports from local-scope keyframes",
+  "description": "PostCSS plugin for css-modules to local-scope keyframes",
   "main": "lib/index.js",
   "files": [
     "lib"
