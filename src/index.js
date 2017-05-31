@@ -46,6 +46,8 @@ const defaultGenerator = (name, path) => {
   return `__${sanitized}__${name}`;
 };
 
+const includes = (array, item) => array.indexOf(item) !== -1;
+
 module.exports = postcss.plugin(plugin, (options = {}) => (css, result) => {
   const generateScopedName = options.generateScopedName || defaultGenerator;
   const { icssImports, icssExports } = extractICSS(css);
@@ -53,7 +55,7 @@ module.exports = postcss.plugin(plugin, (options = {}) => (css, result) => {
 
   css.walkAtRules(/keyframes$/, atrule => {
     const name = atrule.params;
-    if (reserved.includes(name)) {
+    if (includes(reserved, name)) {
       return result.warn(`Unable to use reserve '${name}' animation name`, {
         node: atrule
       });
