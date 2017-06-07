@@ -15,6 +15,8 @@ const run = ({ fixture, expected = null, warnings = [] }) => {
     expect(result.warnings().map(warning => warning.text)).toEqual(warnings);
   });
 };
+const runMsgs = fixture =>
+  compile(fixture, { generateScopedName }).then(result => result.messages);
 
 test("export local-scope keyframes", () => {
   return run({
@@ -226,4 +228,27 @@ test("default scope name generator converts to filename__local identifier", () =
   ).resolves.toEqual(
     ":export {\n  foo: __file_css__foo\n}\n@keyframes __file_css__foo {}"
   );
+});
+
+test("dispatch messages with defined keyframes", () => {
+  return expect(
+    runMsgs(`
+      @keyframes name1 {}
+      @-webkit-keyframes name1 {}
+      @keyframes name2 {}
+    `)
+  ).resolves.toEqual([
+    {
+      plugin: "postcss-icss-keyframes",
+      type: "icss-scoped",
+      name: "name1",
+      value: "__scope__name1"
+    },
+    {
+      plugin: "postcss-icss-keyframes",
+      type: "icss-scoped",
+      name: "name2",
+      value: "__scope__name2"
+    }
+  ]);
 });

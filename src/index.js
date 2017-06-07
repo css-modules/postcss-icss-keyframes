@@ -90,5 +90,12 @@ module.exports = postcss.plugin(plugin, (options = {}) => (css, result) => {
   });
 
   const exports = Object.assign(icssExports, keyframesExports);
+  const messages = Object.keys(exports).map(name => ({
+    plugin,
+    type: "icss-scoped",
+    name,
+    value: icssExports[name]
+  }));
   css.prepend(createICSSRules(icssImports, exports));
+  result.messages.push(...messages);
 });
