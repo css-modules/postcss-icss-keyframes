@@ -1,6 +1,6 @@
 {
   "name": "postcss-icss-keyframes",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "PostCSS plugin for css-modules to local-scope keyframes",
   "main": "lib/index.js",
   "files": [
