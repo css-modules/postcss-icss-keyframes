@@ -63,6 +63,19 @@ Animation names are not replaced if css module does not contain `@keyframes` or 
 }
 ```
 
+### Messages
+
+postcss-icss-keyframes passes result.messages for each defined keyframes
+
+```
+{
+  plugin: 'postcss-icss-keyframes',
+  type: 'icss-scoped',
+  name: string, // local name
+  value: string // scoped name
+}
+```
+
 # License
 
 MIT © [Bogdan Chadkin](mailto:trysound@yandex.ru)
